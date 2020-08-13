@@ -39,22 +39,24 @@ object World {
     object Camera {
         private var phi:Float = toRadians(0f)
         private var theta:Float = toRadians(30f)
-        var fov = Config.MAX_FOV
+        var distance = Config.MAX_CAMERA_DISTANCE
         val vector = Vector3()
 
         init {
-            radiansToVector(vector, theta, phi, Config.CAMERA_DISTANCE)
+            radiansToVector(vector, theta, phi, distance)
         }
 
         fun move(dx:Float, dy:Float){
-            phi -= toRadians(dx)
-            theta += toRadians(dy)
+            val coeff = distance / Config.MAX_CAMERA_DISTANCE
+            phi -= toRadians(dx) * coeff
+            theta += toRadians(dy) * coeff
             theta = min(toRadians(80f), max(toRadians(-80f), theta))
-            radiansToVector(vector, theta, phi, Config.CAMERA_DISTANCE)
+            radiansToVector(vector, theta, phi, distance)
         }
 
-        fun zoom(fov:Float){
-            this.fov = max(Config.MIN_FOV, min(Config.MAX_FOV, fov))
+        fun zoom(distance:Float){
+            this.distance = max(Config.MIN_CAMERA_DISTANCE, min(Config.MAX_CAMERA_DISTANCE, distance))
+            radiansToVector(vector, theta, phi, Camera.distance)
         }
     }
 }

@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 
 class Renderer : ApplicationAdapter() {
@@ -41,15 +42,15 @@ class Renderer : ApplicationAdapter() {
     override fun create() {
         environment = Environment().apply {
             set(ColorAttribute(ColorAttribute.AmbientLight, Config.LIGHT_AMBIENT, Config.LIGHT_AMBIENT, Config.LIGHT_AMBIENT, 1f))
-            directionalLight = DirectionalLight().set(Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.CAMERA_DISTANCE, 0f, 0f)
+            directionalLight = DirectionalLight().set(Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.MAX_CAMERA_DISTANCE, 0f, 0f)
             add(directionalLight)
         }
 
         stage = Stage()
 
-        cam = PerspectiveCamera(World.Camera.fov, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
+        cam = PerspectiveCamera(Config.FOV, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             near = 1f
-            far = Config.CAMERA_DISTANCE
+            far = Config.MAX_CAMERA_DISTANCE
         }
         updateCamera()
 
@@ -65,16 +66,16 @@ class Renderer : ApplicationAdapter() {
                 return true
             }
 
-            private var initialFov:Float? = null
+            private var initialRadius:Float? = null
             override fun zoom(initialDistance: Float, distance: Float): Boolean {
-                if(initialFov==null) initialFov = World.Camera.fov
-                World.Camera.zoom((initialDistance/distance)* initialFov!!)
+                if(initialRadius==null) initialRadius = World.Camera.distance
+                World.Camera.zoom((initialDistance/distance) * (initialRadius!!))
                 updateCamera()
                 return true
             }
             override fun pinchStop() {
                 super.pinchStop()
-                initialFov = null
+                initialRadius = null
             }
             override fun tap(x: Float, y: Float, count: Int, button: Int): Boolean {
                 return if(count==2){
@@ -151,23 +152,27 @@ class Renderer : ApplicationAdapter() {
     }
 
     private fun updateCamera(){
-        directionalLight.setDirection(-World.Camera.vector.x,-World.Camera.vector.y,-World.Camera.vector.z)
+        directionalLight.apply {
+            direction.set(0f,0f,0f).sub(World.Camera.vector).nor()
+        }
 
         cam.apply {
             position.set(World.Camera.vector)
             direction.set(0f, 0f, 0f).sub(World.Camera.vector).nor()
             up.set(0f,1f,0f)
-            fieldOfView = World.Camera.fov
             update()
         }
     }
 
     private val tempVector = Vector3()
     private fun drawLabels(){
+        val maxDistance = sqrt(World.Camera.distance * World.Camera.distance - Config.EARTH_RADIUS * Config.EARTH_RADIUS)
+        val minDistance = World.Camera.distance - Config.EARTH_RADIUS
+
         for((city, label) in mapLabels){
             geoToVector(tempVector, city.lat, city.long, Config.EARTH_RADIUS)
             val distance = Vector3.dst(tempVector.x, tempVector.y, tempVector.z, cam.position.x, cam.position.y, cam.position.z)
-            val alpha = 1f - min(1f,max(0f, (distance-Config.MIN_LABEL_DISTANCE)/(Config.MAX_LABEL_DISTANCE-Config.MIN_LABEL_DISTANCE)))
+            val alpha = 1f - min(1f,max(0f, (distance-minDistance)/(maxDistance-minDistance)))
 
             cam.project(tempVector)
             label.setPosition(tempVector.x, tempVector.y)
