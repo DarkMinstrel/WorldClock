@@ -2,8 +2,6 @@ package com.darkminstrel.worldclock
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.InputAdapter
-import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -14,13 +12,13 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
+import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
 
 
 class Renderer : ApplicationAdapter() {
@@ -49,7 +47,7 @@ class Renderer : ApplicationAdapter() {
 
         stage = Stage()
 
-        cam = PerspectiveCamera(Config.FOV, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
+        cam = PerspectiveCamera(World.Camera.fov, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             near = 1f
             far = Config.CAMERA_DISTANCE
         }
@@ -59,7 +57,34 @@ class Renderer : ApplicationAdapter() {
             for(texture in World.FillTexture.values()) load(texture.filename, Texture::class.java)
         }
 
-        Gdx.input.inputProcessor = InputMultiplexer(inputAdapter)
+        Gdx.input.inputProcessor = GestureDetector(object: SimpleGestureListener() {
+            override fun pan(x: Float, y: Float, deltaX: Float, deltaY: Float): Boolean {
+                val density = Gdx.graphics.density
+                World.Camera.move(deltaX/density, deltaY/density)
+                updateCamera()
+                return true
+            }
+
+            private var initialFov:Float? = null
+            override fun zoom(initialDistance: Float, distance: Float): Boolean {
+                if(initialFov==null) initialFov = World.Camera.fov
+                World.Camera.zoom((initialDistance/distance)* initialFov!!)
+                updateCamera()
+                return true
+            }
+            override fun pinchStop() {
+                super.pinchStop()
+                initialFov = null
+            }
+            override fun tap(x: Float, y: Float, count: Int, button: Int): Boolean {
+                return if(count==2){
+                    //TODO
+                    true
+                }else{
+                    false
+                }
+            }
+        })
     }
 
     private fun onTexturesLoaded(){
@@ -121,24 +146,6 @@ class Renderer : ApplicationAdapter() {
         drawLabels()
     }
 
-    private val inputAdapter = object: InputAdapter() {
-        private var startX = 0
-        private var startY = 0
-        override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-            startX = screenX
-            startY = screenY
-            return true
-        }
-        override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-            val density = Gdx.graphics.density
-            val dx = (screenX - startX).toFloat(); val dy = (screenY - startY).toFloat()
-            World.Camera.move(dx/density, dy/density)
-            startX = screenX; startY = screenY
-            updateCamera()
-            return false
-        }
-    }
-
     override fun resize(width: Int, height: Int) {
         stage.viewport.update(width, height, true)
     }
@@ -150,18 +157,17 @@ class Renderer : ApplicationAdapter() {
             position.set(World.Camera.vector)
             direction.set(0f, 0f, 0f).sub(World.Camera.vector).nor()
             up.set(0f,1f,0f)
+            fieldOfView = World.Camera.fov
             update()
         }
     }
 
     private val tempVector = Vector3()
     private fun drawLabels(){
-        val maxD = sqrt(Config.CAMERA_DISTANCE*Config.CAMERA_DISTANCE - Config.EARTH_RADIUS*Config.EARTH_RADIUS)
-        val minD = Config.CAMERA_DISTANCE - Config.EARTH_RADIUS
         for((city, label) in mapLabels){
             geoToVector(tempVector, city.lat, city.long, Config.EARTH_RADIUS)
             val distance = Vector3.dst(tempVector.x, tempVector.y, tempVector.z, cam.position.x, cam.position.y, cam.position.z)
-            val alpha = 1f - min(1f,max(0f, (distance-minD)/(maxD-minD)))
+            val alpha = 1f - min(1f,max(0f, (distance-Config.MIN_LABEL_DISTANCE)/(Config.MAX_LABEL_DISTANCE-Config.MIN_LABEL_DISTANCE)))
 
             cam.project(tempVector)
             label.setPosition(tempVector.x, tempVector.y)

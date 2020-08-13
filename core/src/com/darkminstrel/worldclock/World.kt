@@ -39,6 +39,7 @@ object World {
     object Camera {
         private var phi:Float = toRadians(0f)
         private var theta:Float = toRadians(30f)
+        var fov = Config.MAX_FOV
         val vector = Vector3()
 
         init {
@@ -50,6 +51,10 @@ object World {
             theta += toRadians(dy)
             theta = min(toRadians(80f), max(toRadians(-80f), theta))
             radiansToVector(vector, theta, phi, Config.CAMERA_DISTANCE)
+        }
+
+        fun zoom(fov:Float){
+            this.fov = max(Config.MIN_FOV, min(Config.MAX_FOV, fov))
         }
     }
 }
