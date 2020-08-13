@@ -2,6 +2,8 @@ package com.darkminstrel.worldclock
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector3
+import kotlin.math.max
+import kotlin.math.min
 
 object World {
     interface Fill
@@ -32,5 +34,22 @@ object World {
     val allObjects = ArrayList<WorldObject>().apply {
         add(earth)
         addAll(cities)
+    }
+
+    object Camera {
+        private var phi:Float = toRadians(0f)
+        private var theta:Float = toRadians(30f)
+        val vector = Vector3()
+
+        init {
+            radiansToVector(vector, theta, phi, Config.CAMERA_DISTANCE)
+        }
+
+        fun move(dx:Float, dy:Float){
+            phi -= toRadians(dx)
+            theta += toRadians(dy)
+            theta = min(toRadians(80f), max(toRadians(-80f), theta))
+            radiansToVector(vector, theta, phi, Config.CAMERA_DISTANCE)
+        }
     }
 }

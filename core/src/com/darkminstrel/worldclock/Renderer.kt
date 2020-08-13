@@ -25,25 +25,20 @@ import kotlin.math.sqrt
 
 class Renderer : ApplicationAdapter() {
 
-    private lateinit var cam:PerspectiveCamera
-    private var phi:Float = toRadians(0f)
-    private var theta:Float = toRadians(30f)
-
     private lateinit var environment: Environment
-
+    private lateinit var cam:PerspectiveCamera
     private lateinit var assetManager:AssetManager
-    private var ready = false
-
     private lateinit var directionalLight: DirectionalLight
     private lateinit var modelBatch: ModelBatch
+    private lateinit var stage: Stage
+
     private val mapTextures = IdentityHashMap<World.FillTexture, Texture>()
     private val mapMaterials = IdentityHashMap<World.Fill, Material>()
     private val mapModels = IdentityHashMap<World.WorldModel, Model>()
     private val instances = ArrayList<Pair<World.WorldObject, ModelInstance>>()
     private val mapLabels = IdentityHashMap<City, Label>()
 
-    private lateinit var stage: Stage
-    private lateinit var label: Label
+    private var ready = false
 
     override fun create() {
         environment = Environment().apply {
@@ -56,7 +51,7 @@ class Renderer : ApplicationAdapter() {
 
         cam = PerspectiveCamera(Config.FOV, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             near = 1f
-            far = Config.CAMERA_DISTANCE * 2
+            far = Config.CAMERA_DISTANCE
         }
         updateCamera()
 
@@ -92,7 +87,7 @@ class Renderer : ApplicationAdapter() {
         }
 
         val generator = FreeTypeFontGenerator(Gdx.files.internal("tahoma.ttf"))
-        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = 28 })
+        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = (16f * Gdx.graphics.density).toInt() })
         generator.dispose()
 
         for(city in City.values()){
@@ -135,10 +130,9 @@ class Renderer : ApplicationAdapter() {
             return true
         }
         override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+            val density = Gdx.graphics.density
             val dx = (screenX - startX).toFloat(); val dy = (screenY - startY).toFloat()
-            phi -= toRadians(dx) / 3
-            theta += toRadians(dy) / 3
-            theta = min(toRadians(80f), max(toRadians(-80f), theta))
+            World.Camera.move(dx/density, dy/density)
             startX = screenX; startY = screenY
             updateCamera()
             return false
@@ -149,17 +143,12 @@ class Renderer : ApplicationAdapter() {
         stage.viewport.update(width, height, true)
     }
 
-    private val cameraVector = Vector3()
     private fun updateCamera(){
-        radiansToVector(cameraVector, theta, phi, Config.CAMERA_DISTANCE)
-
-        directionalLight.apply {
-            setDirection(-cameraVector.x,-cameraVector.y,-cameraVector.z)
-        }
+        directionalLight.setDirection(-World.Camera.vector.x,-World.Camera.vector.y,-World.Camera.vector.z)
 
         cam.apply {
-            position.set(cameraVector)
-            direction.set(0f, 0f, 0f).sub(cam.position).nor()
+            position.set(World.Camera.vector)
+            direction.set(0f, 0f, 0f).sub(World.Camera.vector).nor()
             up.set(0f,1f,0f)
             update()
         }

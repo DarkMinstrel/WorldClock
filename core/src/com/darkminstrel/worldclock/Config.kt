@@ -10,6 +10,6 @@ object Config {
     const val EARTH_DETALIZATION = 30
     const val CITY_RADIUS = 1f
     const val CITY_DETALIZATION = 10
-    const val CAMERA_DISTANCE = 130f
+    const val CAMERA_DISTANCE = 180f
 
 }
