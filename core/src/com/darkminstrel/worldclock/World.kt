@@ -27,7 +27,7 @@ object World {
 
     open class WorldObject(val position: Vector3, val model: WorldModel)
     val earth = WorldObject(Vector3(0f,0f,0f), earthModel)
-    class CityObject(val city: City): WorldObject(geoToVector(city.lat, city.long, Config.EARTH_RADIUS), cityModel)
+    class CityObject(val city: City): WorldObject(geoToVector(city.lat, city.long, Config.EARTH_RADIUS-Config.CITY_RADIUS/2), cityModel)
 
     val cities = City.values().map { CityObject(it) }
 

@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.input.GestureDetector
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
@@ -37,6 +38,9 @@ class Renderer : ApplicationAdapter() {
     private val instances = ArrayList<Pair<World.WorldObject, ModelInstance>>()
     private val mapLabels = IdentityHashMap<City, Label>()
 
+    private val sunLocation = Vector2()
+    private val vectorSun = Vector3()
+
     private var ready = false
 
     override fun create() {
@@ -44,6 +48,7 @@ class Renderer : ApplicationAdapter() {
             set(ColorAttribute(ColorAttribute.AmbientLight, Config.LIGHT_AMBIENT, Config.LIGHT_AMBIENT, Config.LIGHT_AMBIENT, 1f))
             directionalLight = DirectionalLight().set(Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.MAX_CAMERA_DISTANCE, 0f, 0f)
             add(directionalLight)
+            updateSun() //TODO periodically
         }
 
         stage = Stage()
@@ -153,11 +158,14 @@ class Renderer : ApplicationAdapter() {
         stage.viewport.update(width, height, true)
     }
 
-    private fun updateCamera(){
-        directionalLight.apply {
-            direction.set(0f,0f,0f).sub(World.Camera.vector).nor()
-        }
+    private fun updateSun(){
+        SunUtils.compute(sunLocation)
+        DBG("SUN: $sunLocation")
+        geoToVector(vectorSun, sunLocation.x, sunLocation.y, Config.MAX_CAMERA_DISTANCE)
+        directionalLight.direction.set(0f,0f,0f).sub(vectorSun).nor()
+    }
 
+    private fun updateCamera(){
         cam.apply {
             position.set(World.Camera.vector)
             direction.set(0f, 0f, 0f).sub(World.Camera.vector).nor()
