@@ -1,22 +1,25 @@
 package com.darkminstrel.worldclock
 
-import android.R.attr.font
-import android.R.attr.label
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.utils.Align
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 
 class Renderer : ApplicationAdapter() {
@@ -36,6 +39,10 @@ class Renderer : ApplicationAdapter() {
     private val mapMaterials = IdentityHashMap<World.Fill, Material>()
     private val mapModels = IdentityHashMap<World.WorldModel, Model>()
     private val instances = ArrayList<Pair<World.WorldObject, ModelInstance>>()
+    private val mapLabels = IdentityHashMap<City, Label>()
+
+    private lateinit var stage: Stage
+    private lateinit var label: Label
 
     override fun create() {
         environment = Environment().apply {
@@ -43,6 +50,8 @@ class Renderer : ApplicationAdapter() {
             directionalLight = DirectionalLight().set(Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.LIGHT_DIRECTIONAL, Config.CAMERA_DISTANCE, 0f, 0f)
             add(directionalLight)
         }
+
+        stage = Stage()
 
         cam = PerspectiveCamera(Config.FOV, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             near = 1f
@@ -81,7 +90,16 @@ class Renderer : ApplicationAdapter() {
             instances += Pair(obj, instance)
         }
 
-        attr.label = Label(" ", LabelStyle(attr.font, Color.WHITE))
+        val font = BitmapFont().apply {
+            data.scale(1.5f)
+        }
+        for(city in City.values()){
+            val label = Label("  "+city.cityName, Label.LabelStyle(font, Color.WHITE.cpy())).apply {
+                //setAlignment(Align.left)
+            }
+            stage.addActor(label)
+            mapLabels[city] = label
+        }
 
         modelBatch = ModelBatch()
     }
@@ -99,6 +117,8 @@ class Renderer : ApplicationAdapter() {
         modelBatch.begin(cam)
         for(instance in instances) modelBatch.render(instance.second, environment)
         modelBatch.end()
+
+        drawLabels()
     }
 
     private val inputAdapter = object: InputAdapter() {
@@ -120,19 +140,40 @@ class Renderer : ApplicationAdapter() {
         }
     }
 
+    override fun resize(width: Int, height: Int) {
+        stage.viewport.update(width, height, true)
+    }
+
     private val cameraVector = Vector3()
     private fun updateCamera(){
         radiansToVector(cameraVector, theta, phi, Config.CAMERA_DISTANCE)
+
+        directionalLight.apply {
+            setDirection(-cameraVector.x,-cameraVector.y,-cameraVector.z)
+        }
+
         cam.apply {
             position.set(cameraVector)
             direction.set(0f, 0f, 0f).sub(cam.position).nor()
             up.set(0f,1f,0f)
             update()
         }
+    }
 
-        directionalLight.apply {
-            setDirection(-cameraVector.x,-cameraVector.y,-cameraVector.z)
+    private val tempVector = Vector3()
+    private fun drawLabels(){
+        val maxD = sqrt(Config.CAMERA_DISTANCE*Config.CAMERA_DISTANCE - Config.EARTH_RADIUS*Config.EARTH_RADIUS)
+        val minD = Config.CAMERA_DISTANCE - Config.EARTH_RADIUS
+        for((city, label) in mapLabels){
+            geoToVector(tempVector, city.lat, city.long, Config.EARTH_RADIUS)
+            val distance = Vector3.dst(tempVector.x, tempVector.y, tempVector.z, cam.position.x, cam.position.y, cam.position.z)
+            val alpha = 1f - min(1f,max(0f, (distance-minD)/(maxD-minD)))
+
+            cam.project(tempVector)
+            label.setPosition(tempVector.x, tempVector.y)
+            label.style.fontColor.a = alpha
         }
+        stage.draw()
     }
 
     override fun dispose() {
@@ -140,5 +181,6 @@ class Renderer : ApplicationAdapter() {
         for(texture in mapTextures.values) texture.dispose()
         for(model in mapModels.values) model.dispose()
         modelBatch.dispose()
+        stage.dispose()
     }
 }
