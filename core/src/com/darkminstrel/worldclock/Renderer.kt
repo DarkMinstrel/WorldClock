@@ -7,6 +7,8 @@ import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
@@ -15,7 +17,6 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.utils.Align
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -90,9 +91,10 @@ class Renderer : ApplicationAdapter() {
             instances += Pair(obj, instance)
         }
 
-        val font = BitmapFont().apply {
-            data.scale(1.5f)
-        }
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("tahoma.ttf"))
+        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = 28 })
+        generator.dispose()
+
         for(city in City.values()){
             val label = Label("  "+city.cityName, Label.LabelStyle(font, Color.WHITE.cpy())).apply {
                 //setAlignment(Align.left)
@@ -109,14 +111,17 @@ class Renderer : ApplicationAdapter() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         if(!assetManager.update()) return
+
         if(!ready){
             ready = true
             onTexturesLoaded()
         }
 
-        modelBatch.begin(cam)
-        for(instance in instances) modelBatch.render(instance.second, environment)
-        modelBatch.end()
+        with(modelBatch) {
+            begin(cam)
+            for (instance in instances) render(instance.second, environment)
+            end()
+        }
 
         drawLabels()
     }
