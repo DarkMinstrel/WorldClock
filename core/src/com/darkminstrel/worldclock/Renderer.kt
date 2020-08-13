@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.utils.Align
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -117,14 +118,12 @@ class Renderer : ApplicationAdapter() {
             instances += Pair(obj, instance)
         }
 
-        val generator = FreeTypeFontGenerator(Gdx.files.internal("hellovetica.ttf"))
-        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = (10f * Gdx.graphics.density).toInt() })
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("golden.ttf"))
+        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = (12f * Gdx.graphics.density).toInt() })
         generator.dispose()
 
         for(city in City.values()){
-            val label = Label("  "+city.cityName, Label.LabelStyle(font, Color.WHITE.cpy())).apply {
-                //setAlignment(Align.left)
-            }
+            val label = Label(city.getLabelText(), Label.LabelStyle(font, Color.WHITE.cpy()))
             stage.addActor(label)
             mapLabels[city] = label
         }
@@ -187,6 +186,7 @@ class Renderer : ApplicationAdapter() {
             cam.project(tempVector)
             label.setPosition(tempVector.x, tempVector.y)
             label.style.fontColor.a = alpha
+            label.setText(city.getLabelText())
         }
         stage.draw()
     }
