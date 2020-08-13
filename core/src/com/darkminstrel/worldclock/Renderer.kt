@@ -112,8 +112,8 @@ class Renderer : ApplicationAdapter() {
             instances += Pair(obj, instance)
         }
 
-        val generator = FreeTypeFontGenerator(Gdx.files.internal("tahoma.ttf"))
-        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = (16f * Gdx.graphics.density).toInt() })
+        val generator = FreeTypeFontGenerator(Gdx.files.internal("hellovetica.ttf"))
+        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = (10f * Gdx.graphics.density).toInt() })
         generator.dispose()
 
         for(city in City.values()){
@@ -138,12 +138,14 @@ class Renderer : ApplicationAdapter() {
             onTexturesLoaded()
         }
 
+        //draw models
         with(modelBatch) {
             begin(cam)
             for (instance in instances) render(instance.second, environment)
             end()
         }
 
+        //draw stage
         drawLabels()
     }
 
