@@ -71,12 +71,14 @@ class Scene: IScene {
 
     override fun render() {
         val now = System.currentTimeMillis()
+        val elapsed = Gdx.graphics.deltaTime
+
         sun.setTime(now)
-        beholder.updateCamera()
+        beholder.updateCamera(elapsed)
 
         with(modelBatch) {
             begin(beholder.getCamera())
-            for(instance in instances) render(instance, environment)
+            instances.forEach { render(it, environment) }
             end()
         }
 

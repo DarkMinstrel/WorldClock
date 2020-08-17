@@ -15,7 +15,7 @@ interface IBeholder {
     fun getDistance():Float
     fun tryZoom()
     fun getCamera():PerspectiveCamera
-    fun updateCamera()
+    fun updateCamera(elapsed:Float)
 }
 
 class Beholder: IBeholder {
@@ -32,7 +32,7 @@ class Beholder: IBeholder {
     }
 
     init {
-        updateCamera()
+        updateCamera(0f)
     }
 
     override fun move(dx:Float, dy:Float){
@@ -62,8 +62,7 @@ class Beholder: IBeholder {
 
     override fun getCamera(): PerspectiveCamera = this.camera
 
-    override fun updateCamera(){
-        val elapsed = Gdx.graphics.deltaTime
+    override fun updateCamera(elapsed:Float){
         if(speedD != 0f) distance = min(_Config.MAX_CAMERA_DISTANCE, max(_Config.MIN_CAMERA_DISTANCE, distance + speedD * elapsed))
         phi += speedPhi * elapsed
 
