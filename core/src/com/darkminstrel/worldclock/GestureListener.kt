@@ -25,8 +25,11 @@ class GestureListener(private val beholder: IBeholder): GestureDetector.GestureL
     }
 
     override fun tap(x: Float, y: Float, count: Int, button: Int): Boolean {
-        return if(count==2){
-            //TODO
+        return if(count==2) {
+            beholder.tryZoom()
+            true
+        }else if(count==1){
+            beholder.fling(0f,0f)
             true
         }else{
             false
@@ -34,7 +37,8 @@ class GestureListener(private val beholder: IBeholder): GestureDetector.GestureL
     }
 
     override fun fling(velocityX: Float, velocityY: Float, button: Int): Boolean {
-        return false
+        beholder.fling(velocityX/density, velocityY/density)
+        return true
     }
 
     override fun panStop(x: Float, y: Float, pointer: Int, button: Int): Boolean {

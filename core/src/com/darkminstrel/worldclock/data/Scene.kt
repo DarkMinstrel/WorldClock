@@ -63,6 +63,7 @@ class Scene:IScene {
     override fun render() {
         val now = System.currentTimeMillis()
         sun.setTime(now)
+        beholder.updateCamera()
 
         with(modelBatch) {
             begin(beholder.getCamera())
