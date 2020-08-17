@@ -10,7 +10,7 @@ object Config {
 
     const val EARTH_RADIUS = 50f
     const val EARTH_DETALIZATION = 30
-    const val CITY_RADIUS = 1f
+    const val CITY_RADIUS = 0.5f
     const val CITY_DETALIZATION = 10
 
     const val CAMERA_FOV = 67f //degrees

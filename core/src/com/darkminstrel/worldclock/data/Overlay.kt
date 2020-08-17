@@ -23,7 +23,10 @@ class Overlay:IOverlay {
 
     init {
         FreeTypeFontGenerator(Gdx.files.internal(Config.FONT)).apply {
-            font = generateFont(FreeTypeFontGenerator.FreeTypeFontParameter().also { it.size = (Config.FONT_SIZE * Gdx.graphics.density).toInt() })
+            font = generateFont(FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+                size = (Config.FONT_SIZE * Gdx.graphics.density).toInt()
+                spaceY = (2f * Gdx.graphics.density).toInt()
+            })
             dispose()
         }
         for(city in City.values()){
