@@ -20,6 +20,8 @@ class Overlay:IOverlay {
     private val stage = Stage()
     private val font: BitmapFont
     private val labels = IdentityHashMap<City, Label>()
+    private val paddingX = Gdx.graphics.density * 8f
+    private val paddingY = 0f
 
     init {
         FreeTypeFontGenerator(Gdx.files.internal(Config.FONT)).apply {
@@ -43,6 +45,7 @@ class Overlay:IOverlay {
     override fun update(now: Long, beholder: IBeholder) {
         val maxDistance = sqrt(beholder.getDistance() * beholder.getDistance() - Config.EARTH_RADIUS * Config.EARTH_RADIUS)
         val minDistance = beholder.getDistance() - Config.EARTH_RADIUS
+        val coeff = beholder.getDistance() / Config.MAX_CAMERA_DISTANCE
 
         for ((city, label) in labels) {
             geoToVector(tempVector, city.lat, city.long, Config.EARTH_RADIUS)
@@ -50,7 +53,7 @@ class Overlay:IOverlay {
             val alpha = 1f - min(1f, max(0f, (distance - minDistance) / (maxDistance - minDistance)))
 
             beholder.getCamera().project(tempVector)
-            label.setPosition(tempVector.x, tempVector.y)
+            label.setPosition(tempVector.x + paddingX/coeff, tempVector.y + paddingY)
             label.style.fontColor.a = alpha
             city.formatLabelText(now, tempString)
             label.setText(tempString)

@@ -14,8 +14,8 @@ class Beholder:IBeholder {
     private var theta:Float = toRadians(30f)
     private var distance = Config.MAX_CAMERA_DISTANCE
     private val position = Vector3()
-    private var speedD = 1.0f
-    private var speedPhi = 0.01f
+    private var speedD = 0.0f
+    private var speedPhi = 0.5f
 
     private val camera = PerspectiveCamera(Config.CAMERA_FOV, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
         near = 1f
@@ -28,25 +28,25 @@ class Beholder:IBeholder {
 
     override fun move(dx:Float, dy:Float){
         speedPhi = 0f
-        val coeff = distance / Config.MAX_CAMERA_DISTANCE
-        phi -= toRadians(dx) * coeff
-        theta += toRadians(dy) * coeff
+        val c = distance / Config.MAX_CAMERA_DISTANCE
+        phi -= toRadians(dx) * c
+        theta += toRadians(dy) * c
         theta = min(toRadians(80f), max(toRadians(-80f), theta))
     }
 
     override fun fling(dx: Float, dy: Float) {
-        val coeff = distance / Config.MAX_CAMERA_DISTANCE / 300f
-        speedPhi = -toRadians(dx) * coeff
+        val c = distance / Config.MAX_CAMERA_DISTANCE / 4f
+        speedPhi = -toRadians(dx) * c
     }
 
     override fun setDistance(distance:Float){
-        speedD = 1.0f
+        speedPhi = 0.0f
+        speedD = 0.0f
         this.distance = max(Config.MIN_CAMERA_DISTANCE, min(Config.MAX_CAMERA_DISTANCE, distance))
     }
 
     override fun tryZoom(){
-        if(this.distance==Config.MAX_CAMERA_DISTANCE) speedD = 0.96f
-        else speedD = 1.04f
+        speedD = if(this.distance==Config.MAX_CAMERA_DISTANCE) -300f else 300f
     }
 
     override fun getDistance(): Float = this.distance
@@ -54,10 +54,9 @@ class Beholder:IBeholder {
     override fun getCamera(): PerspectiveCamera = this.camera
 
     override fun updateCamera(){
-        if(speedD!=1.0f) {
-            distance = min(Config.MAX_CAMERA_DISTANCE, max(Config.MIN_CAMERA_DISTANCE, distance * speedD))
-        }
-        phi += speedPhi
+        val elapsed = Gdx.graphics.deltaTime
+        if(speedD != 0f) distance = min(Config.MAX_CAMERA_DISTANCE, max(Config.MIN_CAMERA_DISTANCE, distance + speedD * elapsed))
+        phi += speedPhi * elapsed
 
         radiansToVector(position, theta, phi, distance)
         camera.apply {

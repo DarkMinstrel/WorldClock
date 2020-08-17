@@ -4,8 +4,10 @@ import java.util.*
 
 enum class City(private val cityName:String, val lat:Float, val long:Float, private val timezone:String) {
     KYIV("Kyiv", 50.45f, 30.523333f, "Europe/Kiev"),
+    //LONDON("London", 51.507222f, -0.1275f, "Europe/London"),
+    MADRID("Madrid",40.383333f, -3.716667f, "Europe/Madrid"),
     NEW_YORK("New York", 40.72833f,-73.99417f, "America/New_York"),
-    LA("Los Angeles", 34.05f, -118.25f, "America/Los_Angeles"),
+    LOS_ANGELES("Los Angeles", 34.05f, -118.25f, "America/Los_Angeles"),
     TOKYO("Tokyo", 35.7f,139.6f, "Asia/Tokyo"),
     MUMBAI("Mumbai", 18.975f, 72.825833f, "Asia/Calcutta"),
     SYDNEY("Sydney",-33.86944f,151.20833f,"Australia/Sydney"),
@@ -25,6 +27,6 @@ enum class City(private val cityName:String, val lat:Float, val long:Float, priv
         this.formatter.format("%02d:%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND))
 
         dst.clear()
-        dst.append("  ").append(this.cityName).append("\n  ").append(sb)
+        dst.append(this.cityName).append("\n").append(sb)
     }
 }

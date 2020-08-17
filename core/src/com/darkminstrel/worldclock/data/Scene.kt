@@ -48,7 +48,7 @@ class Scene:IScene {
 
         //cities
         val tempVector = Vector3()
-        val cityMaterial = Material(ColorAttribute.createDiffuse(Color.YELLOW))
+        val cityMaterial = Material(ColorAttribute.createDiffuse(Color.GREEN))
         val cityModel = modelBuilder.createSphere(Config.CITY_RADIUS*2, Config.CITY_RADIUS*2, Config.CITY_RADIUS*2, Config.CITY_DETALIZATION, Config.CITY_DETALIZATION, cityMaterial, (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong()).also { disposables.add(it) }
         for(city in City.values()){
             ModelInstance(cityModel).apply {
