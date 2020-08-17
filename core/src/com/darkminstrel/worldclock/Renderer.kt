@@ -17,7 +17,6 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.utils.Align
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -31,6 +30,7 @@ class Renderer : ApplicationAdapter() {
     private lateinit var assetManager:AssetManager
     private lateinit var directionalLight: DirectionalLight
     private lateinit var modelBatch: ModelBatch
+    private lateinit var font: BitmapFont
     private lateinit var stage: Stage
 
     private val mapTextures = IdentityHashMap<World.FillTexture, Texture>()
@@ -119,11 +119,11 @@ class Renderer : ApplicationAdapter() {
         }
 
         val generator = FreeTypeFontGenerator(Gdx.files.internal("golden.ttf"))
-        val font: BitmapFont = generator.generateFont(FreeTypeFontParameter().also { it.size = (12f * Gdx.graphics.density).toInt() })
+        font = generator.generateFont(FreeTypeFontParameter().also { it.size = (12f * Gdx.graphics.density).toInt() })
         generator.dispose()
 
         for(city in City.values()){
-            val label = Label(city.getLabelText(), Label.LabelStyle(font, Color.WHITE.cpy()))
+            val label = Label(null, Label.LabelStyle(font, Color.WHITE.cpy()))
             stage.addActor(label)
             mapLabels[city] = label
         }
@@ -174,19 +174,22 @@ class Renderer : ApplicationAdapter() {
     }
 
     private val tempVector = Vector3()
+    private val tempString = StringBuilder()
     private fun drawLabels(){
         val maxDistance = sqrt(World.Camera.distance * World.Camera.distance - Config.EARTH_RADIUS * Config.EARTH_RADIUS)
         val minDistance = World.Camera.distance - Config.EARTH_RADIUS
 
+        val now = System.currentTimeMillis()
         for((city, label) in mapLabels){
             geoToVector(tempVector, city.lat, city.long, Config.EARTH_RADIUS)
             val distance = Vector3.dst(tempVector.x, tempVector.y, tempVector.z, cam.position.x, cam.position.y, cam.position.z)
-            val alpha = 1f - min(1f,max(0f, (distance-minDistance)/(maxDistance-minDistance)))
+            val alpha = 1f - min(1f, max(0f, (distance-minDistance)/(maxDistance-minDistance)))
 
             cam.project(tempVector)
             label.setPosition(tempVector.x, tempVector.y)
             label.style.fontColor.a = alpha
-            label.setText(city.getLabelText())
+            city.formatLabelText(now, tempString)
+            label.setText(tempString)
         }
         stage.draw()
     }
@@ -195,6 +198,7 @@ class Renderer : ApplicationAdapter() {
         assetManager.dispose()
         for(texture in mapTextures.values) texture.dispose()
         for(model in mapModels.values) model.dispose()
+        font.dispose()
         modelBatch.dispose()
         stage.dispose()
     }
