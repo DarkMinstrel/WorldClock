@@ -1,19 +1,18 @@
 package com.darkminstrel.worldclock
 
-import com.badlogic.gdx.math.Vector2
 import java.util.*
 import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-private const val K = Math.PI / 180.0
-
 object SunUtils {
+    private const val K = Math.PI / 180.0
+    private val timeZone = TimeZone.getTimeZone("UTC")
+    private val calendar = Calendar.getInstance(timeZone)
 
-    fun compute(dst: Vector2){
-        val timeZone = TimeZone.getTimeZone("UTC")
-        val calendar = Calendar.getInstance(timeZone)
+    fun computeSunLocation(dst: LatLng, millis:Long){
+        calendar.timeInMillis = millis
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)+1
         val date = calendar.get(Calendar.DAY_OF_MONTH)
