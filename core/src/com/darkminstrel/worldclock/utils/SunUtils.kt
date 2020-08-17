@@ -1,4 +1,4 @@
-package com.darkminstrel.worldclock
+package com.darkminstrel.worldclock.utils
 
 import java.util.*
 import kotlin.math.atan
@@ -8,8 +8,7 @@ import kotlin.math.sqrt
 
 object SunUtils {
     private const val K = Math.PI / 180.0
-    private val timeZone = TimeZone.getTimeZone("UTC")
-    private val calendar = Calendar.getInstance(timeZone)
+    private val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 
     fun computeSunLocation(dst: LatLng, millis:Long){
         calendar.timeInMillis = millis

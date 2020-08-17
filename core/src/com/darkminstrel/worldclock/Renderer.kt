@@ -3,8 +3,6 @@ package com.darkminstrel.worldclock
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
-import com.darkminstrel.worldclock.data.IScene
-import com.darkminstrel.worldclock.data.Scene
 
 class Renderer : ApplicationAdapter() {
 
@@ -20,12 +18,6 @@ class Renderer : ApplicationAdapter() {
 
         scene.render()
     }
-
-    //TODO
-//    override fun resize(width: Int, height: Int) {
-//        stage.viewport.update(width, height, true)
-//    }
-
 
     override fun dispose() {
         scene.dispose()

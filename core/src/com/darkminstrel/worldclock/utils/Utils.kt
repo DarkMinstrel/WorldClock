@@ -1,4 +1,4 @@
-package com.darkminstrel.worldclock
+package com.darkminstrel.worldclock.utils
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.Vector3
@@ -13,9 +13,9 @@ fun toRadians(deg:Float):Float = deg * PI / 180.0f
 fun toDegrees(rad:Float):Float = rad / PI * 180.0f
 
 fun radiansToVector(dst:Vector3, theta:Float, phi:Float, radius: Float){
-    val x = radius * cos(theta) * cos(PI-phi)
+    val x = radius * cos(theta) * cos(PI -phi)
     val y = radius * sin(theta)
-    val z = radius * cos(theta) * sin(PI-phi)
+    val z = radius * cos(theta) * sin(PI -phi)
     dst.set(x,y,z)
 }
 

@@ -1,7 +1,7 @@
 package com.darkminstrel.worldclock
 
-object Config {
-    const val TEXTURE_EARTH = "earth2.png"
+object _Config {
+    const val TEXTURE_EARTH = "earth.png"
     const val FONT = "golden.ttf"
     const val FONT_SIZE = 12f
 

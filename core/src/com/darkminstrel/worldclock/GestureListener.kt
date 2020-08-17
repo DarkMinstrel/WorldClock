@@ -3,7 +3,6 @@ package com.darkminstrel.worldclock
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.Vector2
-import com.darkminstrel.worldclock.data.IBeholder
 
 class GestureListener(private val beholder: IBeholder): GestureDetector.GestureListener {
     private val density = Gdx.graphics.density
